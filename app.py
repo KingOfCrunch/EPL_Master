@@ -239,32 +239,22 @@ def main():
             schedule = schedule.drop('kickoff', axis=1, errors='ignore')
             schedule = schedule.rename(columns={'Kickoff Melbourne': 'Kickoff'})
 
-    # Display metrics
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Teams Loaded", len(stats_df))
-    with col2:
-        st.metric("Total Fixtures", len(matches_df))
-    with col3:
-        st.metric("Fixtures Shown", len(schedule))
-    with col4:
-        missing_count = schedule[["Home SOT %", "Away SOT %", "Home xGOT %", "Away xGOT %"]].isna().any(axis=1).sum()
-        st.metric("Missing Stats", missing_count)
+    # ...existing code...
 
     # Main table
     st.header("Fixtures with Analysis")
     
     # Prepare display columns
     display_cols = [
-        "Home Team", "Home SOT %", "Home xGOT %", "Home Succ Pass Opp Half",
-        "Away Team", "Away SOT %", "Away xGOT %", "Away Succ Pass Opp Half",
+        "Home Team", "Home SOT %", "Home Succ Pass Opp Half",
+        "Away Team", "Away SOT %", "Away Succ Pass Opp Half",
         "matchWeek", "Kickoff", "ground"
     ]
     display_schedule = schedule[display_cols].rename(columns={"matchWeek": "Week", "ground": "Ground"})
     st.dataframe(display_schedule, use_container_width=True)
 
     # Missing stats warning
-    missing = schedule[schedule[["Home SOT %", "Away SOT %", "Home xGOT %", "Away xGOT %"]].isna().any(axis=1)]
+    missing = schedule[schedule[["Home SOT %", "Away SOT %"]].isna().any(axis=1)]
     if not missing.empty:
         st.warning(f"⚠️ {len(missing)} fixtures have missing team statistics")
         with st.expander("View fixtures with missing stats"):
