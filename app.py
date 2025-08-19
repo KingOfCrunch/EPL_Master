@@ -192,9 +192,6 @@ def main():
 
     # Sidebar controls
     st.sidebar.header("Settings")
-    stats_season = st.sidebar.selectbox("Stats Season", ["2025", "2024"], index=0)
-    fixtures_season = st.sidebar.selectbox("Fixtures Season", ["2025", "2024"], index=0)
-    prematch_only = st.sidebar.checkbox("PreMatch fixtures only", value=True)
     match_limit = st.sidebar.number_input("Match limit", min_value=1, max_value=100, value=20)
     
     # Add refresh button
@@ -204,14 +201,14 @@ def main():
 
     # Load data
     with st.spinner("Fetching team statistics..."):
-        stats_df = fetch_stats(season=stats_season, limit=40)
+        stats_df = fetch_stats(season="2025", limit=40)
     
     if stats_df.empty:
         st.error("Failed to fetch team statistics")
         return
 
     with st.spinner("Fetching fixtures..."):
-        matches_df = fetch_matches(season=fixtures_season, page_size=50)
+        matches_df = fetch_matches(season="2025", page_size=50)
     
     if matches_df.empty:
         st.error("Failed to fetch fixtures")
@@ -224,8 +221,8 @@ def main():
     # Convert to Melbourne time
     matches_df = convert_to_melbourne_time(matches_df)
 
-    # Build schedule
-    schedule = build_schedule_with_metrics(stats_df, matches_df, prematch_only=prematch_only)
+    # Build schedule (always pre-match only)
+    schedule = build_schedule_with_metrics(stats_df, matches_df, prematch_only=True)
 
     if schedule.empty:
         st.warning("No matches found with the current filters")
@@ -265,7 +262,7 @@ def main():
     st.download_button(
         label="Download CSV",
         data=csv,
-        file_name=f"premier_league_fixtures_{fixtures_season}.csv",
+        file_name="premier_league_fixtures_2025.csv",
         mime="text/csv"
     )
 
