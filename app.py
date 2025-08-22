@@ -192,7 +192,7 @@ def main():
 
     # Sidebar controls
     st.sidebar.header("Settings")
-    match_limit = st.sidebar.number_input("Match limit", min_value=1, max_value=100, value=20)
+    match_limit = st.sidebar.number_input("Match limit", min_value=1, max_value=100, value=10)
     
     # Add refresh button
     if st.sidebar.button("Refresh Data"):
@@ -213,6 +213,10 @@ def main():
     if matches_df.empty:
         st.error("Failed to fetch fixtures")
         return
+
+    # Filter to only pre-match fixtures (not played yet)
+    if not matches_df.empty and "period" in matches_df.columns:
+        matches_df = matches_df[matches_df["period"] == "PreMatch"].copy()
 
     # Apply match limit
     if match_limit and not matches_df.empty:
