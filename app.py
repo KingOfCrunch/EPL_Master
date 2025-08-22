@@ -82,15 +82,12 @@ def fetch_stats(season: str = "2024", limit: int = 40) -> pd.DataFrame:
         metric_sot = (sot / denom_sot) if denom_sot > 0 else np.nan
         # Possession Percentage
         possession = float(s.get("possessionPercentage", 0) or 0)
-        # Successful Passes Opp Half
-        succ_pass_opp_half = float(s.get("successfulPassesOppositionHalf", 0) or 0)
         rows.append({
             "team": team_name,
             "team_norm": norm_name(team_name),
             "metric_sot": metric_sot,
             "metric_sot_%": None if pd.isna(metric_sot) else round(metric_sot * 100, 2),
             "possession": possession,
-            "succ_pass_opp_half": succ_pass_opp_half,
         })
     
     df = pd.DataFrame(rows)
@@ -163,15 +160,11 @@ def build_schedule_with_metrics(stats_df: pd.DataFrame, matches_df: pd.DataFrame
     # Map normalized team name -> metrics
     sot_pct_by_name = dict(zip(stats_df["team_norm"], stats_df["metric_sot_%"]))
     possession_by_name = dict(zip(stats_df["team_norm"], stats_df["possession"]))
-    succ_pass_opp_half_by_name = dict(zip(stats_df["team_norm"], stats_df["succ_pass_opp_half"]))
-
     out = matches_df.copy()
     out["Home SOT %"] = out["home_norm"].map(sot_pct_by_name)
     out["Away SOT %"] = out["away_norm"].map(sot_pct_by_name)
     out["Home Possession %"] = out["home_norm"].map(possession_by_name)
     out["Away Possession %"] = out["away_norm"].map(possession_by_name)
-    out["Home Succ Pass Opp Half"] = out["home_norm"].map(succ_pass_opp_half_by_name)
-    out["Away Succ Pass Opp Half"] = out["away_norm"].map(succ_pass_opp_half_by_name)
 
     # Round values
     out["Home SOT %"] = out["Home SOT %"].round(2)
@@ -243,8 +236,8 @@ def main():
     
     # Prepare display columns
     display_cols = [
-        "Home Team", "Home SOT %", "Home Possession %", "Home Succ Pass Opp Half",
-        "Away Team", "Away SOT %", "Away Possession %", "Away Succ Pass Opp Half",
+        "Home Team", "Home SOT %", "Home Possession %",
+        "Away Team", "Away SOT %", "Away Possession %",
         "matchWeek", "Kickoff", "ground"
     ]
     display_schedule = schedule[display_cols].rename(columns={"matchWeek": "Week", "ground": "Ground"})
@@ -261,7 +254,7 @@ def main():
 
     def style_schedule(df):
         styled = pd.DataFrame("", index=df.index, columns=df.columns)
-        for stat in ["SOT %", "Possession %", "Succ Pass Opp Half"]:
+        for stat in ["SOT %", "Possession %"]:
             home_col = f"Home {stat}"
             away_col = f"Away {stat}"
             if home_col in df.columns and away_col in df.columns:
