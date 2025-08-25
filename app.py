@@ -158,21 +158,51 @@ def build_schedule_with_metrics(stats_df: pd.DataFrame, matches_df: pd.DataFrame
         matches_df = matches_df[matches_df["period"] == "PreMatch"].copy()
 
     # Map normalized team name -> metrics
-    sot_pct_by_name = dict(zip(stats_df["team_norm"], stats_df["metric_sot_%"]))
-    possession_by_name = dict(zip(stats_df["team_norm"], stats_df["possession"]))
-    out = matches_df.copy()
-    out["Home SOT %"] = out["home_norm"].map(sot_pct_by_name)
-    out["Away SOT %"] = out["away_norm"].map(sot_pct_by_name)
-    out["Home Possession %"] = out["home_norm"].map(possession_by_name)
-    out["Away Possession %"] = out["away_norm"].map(possession_by_name)
-
-    # Round values
-    out["Home SOT %"] = out["Home SOT %"].round(2)
-    out["Away SOT %"] = out["Away SOT %"].round(2)
-    out["Home Possession %"] = out["Home Possession %"].round(2)
-    out["Away Possession %"] = out["Away Possession %"].round(2)
-
-    return out
+        possession_by_name = dict(zip(stats_df["team_norm"], stats_df["possession"]))
+        xgot_by_name = dict(zip(stats_df["team_norm"], stats_df["xGOT"]))
+        xgotc_by_name = dict(zip(stats_df["team_norm"], stats_df["xGOTC"]))
+        out = matches_df.copy()
+        out["Home xGOT"] = out["home_norm"].map(xgot_by_name)
+        out["Away xGOTC"] = out["away_norm"].map(xgotc_by_name)
+        out["Home Possession %"] = out["home_norm"].map(possession_by_name)
+        out["Away Possession %"] = out["away_norm"].map(possession_by_name)
+        # Add expected goals per match from standings
+        standings_df = fetch_standings(season="2025")
+        xgpm_by_name = dict(zip(standings_df["team_norm"], standings_df["xGPM"]))
+        xgcpm_by_name = dict(zip(standings_df["team_norm"], standings_df["xGCPM"]))
+        out["Home xGPM"] = out["home_norm"].map(xgpm_by_name)
+        out["Away xGCPM"] = out["away_norm"].map(xgcpm_by_name)
+        # Round values
+        for col in ["Home xGOT", "Away xGOTC", "Home Possession %", "Away Possession %", "Home xGPM", "Away xGCPM"]:
+            if col in out.columns:
+                out[col] = out[col].round(2)
+        return out
+# Fetch standings and calculate expected goals per match
+@st.cache_data(ttl=1800)
+def fetch_standings(season: str = "2025") -> pd.DataFrame:
+    url = f"https://sdp-prem-prod.premier-league-prod.pulselive.com/api/v5/competitions/8/seasons/{season}/standings?live=false"
+    payload = http_get(url)
+    rows = []
+    for table in payload.get("tables", []):
+        for entry in table.get("entries", []):
+            team = entry.get("team", {})
+            overall = entry.get("overall", {})
+            team_name = team.get("name")
+            played = overall.get("played", 0)
+            xg = overall.get("expectedGoals", 0)
+            xgc = overall.get("expectedGoalsConceded", 0)
+            xgpm = (xg / played) if played else np.nan
+            xgcpm = (xgc / played) if played else np.nan
+            rows.append({
+                "team": team_name,
+                "team_norm": norm_name(team_name),
+                "xGPM": xgpm,
+                "xGCPM": xgcpm,
+            })
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df = df.dropna(subset=["team_norm"]).drop_duplicates(subset=["team_norm"]).reset_index(drop=True)
+    return df
 
 def main():
     # Header
@@ -236,11 +266,15 @@ def main():
     
     # Prepare display columns
     display_cols = [
-        "Home Team", "Home SOT %", "Home Possession %",
-        "Away Team", "Away SOT %", "Away Possession %",
+        "Home Team", "Home xGOT", "Home xGPM", "Home Possession %",
+        "Away Team", "Away xGOTC", "Away xGCPM", "Away Possession %",
         "matchWeek", "Kickoff", "ground"
     ]
-    display_schedule = schedule[display_cols].rename(columns={"matchWeek": "Week", "ground": "Ground"})
+    display_schedule = schedule[display_cols].rename(columns={
+        "Home xGOT": "xGOT", "Home xGPM": "xGPM", "Home Possession %": "Possession",
+        "Away xGOTC": "xGOTC", "Away xGCPM": "xGCPM", "Away Possession %": "Possession",
+        "matchWeek": "Week", "ground": "Ground"
+    })
 
     def highlight_better(val_home, val_away):
         if pd.isna(val_home) or pd.isna(val_away):
