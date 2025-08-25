@@ -149,7 +149,9 @@ def main():
                             styles[away_idx] = 'background-color: #b6fcb6;'
                 return styles
 
-            styled_df = df[display_cols].style.apply(highlight_better, axis=1)
+            # Sort by Kickoff
+            sorted_df = df[display_cols].sort_values(by="Kickoff")
+            styled_df = sorted_df.style.apply(highlight_better, axis=1)
             st.dataframe(styled_df, use_container_width=True, height=400)
         return df.head(limit)
 
@@ -178,7 +180,8 @@ def main():
     # Display only Team ID, Team Name, xGOT/90, xGOTC/90, Possession, GF, GA, Pts, Pts%, xGOT%
     display_cols = ["team", "xGOT/90", "xGOTC/90", "Possession", "GF", "GA", "Pts", "Pts%", "xGOT%"]
     st.subheader("Rank")
-    st.dataframe(merged[display_cols], use_container_width=True, height=800)
+    sorted_rank = merged.sort_values(by="Pts", ascending=False)
+    st.dataframe(sorted_rank[display_cols], use_container_width=True, height=800)
 
 if __name__ == "__main__":
     main()
