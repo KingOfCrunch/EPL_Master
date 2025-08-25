@@ -126,7 +126,7 @@ def main():
             display_cols = [
                 "Week", "Kickoff", "Home", "Home xGOT/90", "Home xGOTC/90", "Home Possession",
                 "Away", "Away xGOT/90", "Away xGOTC/90", "Away Possession",
-                "Ground", "Period"
+                "Ground"
             ]
 
             def highlight_better(row):
@@ -176,7 +176,7 @@ def main():
     # Now update the schedule table to show stats
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
     # Display only Team ID, Team Name, xGOT/90, xGOTC/90, Possession, GF, GA, Pts, Pts%, xGOT%
-    display_cols = ["team_id", "team", "xGOT/90", "xGOTC/90", "Possession", "GF", "GA", "Pts", "Pts%", "xGOT%"]
+    display_cols = ["team", "xGOT/90", "xGOTC/90", "Possession", "GF", "GA", "Pts", "Pts%", "xGOT%"]
     st.subheader("Rank")
     st.dataframe(merged[display_cols], use_container_width=True, height=800)
 
