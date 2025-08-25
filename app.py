@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 import pytz
 from datetime import datetime, timedelta
 
+
 # Page configuration
 st.set_page_config(
     page_title="Premier League Fixtures Analysis",
