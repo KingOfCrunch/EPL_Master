@@ -131,22 +131,28 @@ def main():
 
             def highlight_better(row):
                 styles = [''] * len(display_cols)
-                # Compare Home vs Away for each stat
+                # For xGOT/90 and Possession, higher is better; for xGOTC/90, lower is better
                 stat_pairs = [
-                    ("Home xGOT/90", "Away xGOT/90"),
-                    ("Home xGOTC/90", "Away xGOTC/90"),
-                    ("Home Possession", "Away Possession")
+                    ("Home xGOT/90", "Away xGOT/90", "high"),
+                    ("Home xGOTC/90", "Away xGOTC/90", "low"),
+                    ("Home Possession", "Away Possession", "high")
                 ]
-                for i, (home_col, away_col) in enumerate(stat_pairs):
+                for home_col, away_col, mode in stat_pairs:
                     home_val = row[home_col]
                     away_val = row[away_col]
                     home_idx = display_cols.index(home_col)
                     away_idx = display_cols.index(away_col)
                     if pd.notnull(home_val) and pd.notnull(away_val):
-                        if home_val > away_val:
-                            styles[home_idx] = 'background-color: #b6fcb6;'
-                        elif away_val > home_val:
-                            styles[away_idx] = 'background-color: #b6fcb6;'
+                        if mode == "high":
+                            if home_val > away_val:
+                                styles[home_idx] = 'background-color: #b6fcb6;'
+                            elif away_val > home_val:
+                                styles[away_idx] = 'background-color: #b6fcb6;'
+                        elif mode == "low":
+                            if home_val < away_val:
+                                styles[home_idx] = 'background-color: #b6fcb6;'
+                            elif away_val < home_val:
+                                styles[away_idx] = 'background-color: #b6fcb6;'
                 return styles
 
             # Sort by Kickoff
