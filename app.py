@@ -137,6 +137,7 @@ def main():
                     ("Home xGOTC/90", "Away xGOTC/90", "low"),
                     ("Home Possession", "Away Possession", "high")
                 ]
+                green_style = 'background-color: #b6fcb6; color: black;'
                 for home_col, away_col, mode in stat_pairs:
                     home_val = row[home_col]
                     away_val = row[away_col]
@@ -145,14 +146,14 @@ def main():
                     if pd.notnull(home_val) and pd.notnull(away_val):
                         if mode == "high":
                             if home_val > away_val:
-                                styles[home_idx] = 'background-color: #b6fcb6;'
+                                styles[home_idx] = green_style
                             elif away_val > home_val:
-                                styles[away_idx] = 'background-color: #b6fcb6;'
+                                styles[away_idx] = green_style
                         elif mode == "low":
                             if home_val < away_val:
-                                styles[home_idx] = 'background-color: #b6fcb6;'
+                                styles[home_idx] = green_style
                             elif away_val < home_val:
-                                styles[away_idx] = 'background-color: #b6fcb6;'
+                                styles[away_idx] = green_style
                 return styles
 
             # Sort by Kickoff
