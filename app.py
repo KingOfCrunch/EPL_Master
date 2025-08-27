@@ -100,23 +100,21 @@ def main():
                 away_stats = stats_df[stats_df["team_id"] == away_id]
                 for prefix, stats in [("Home", home_stats), ("Away", away_stats)]:
                     if not stats.empty:
-                        row[f"{prefix} xGOT/90"] = stats["xGOT/90"].values[0]
-                        row[f"{prefix} xGOTC/90"] = stats["xGOTC/90"].values[0]
+                        row[f"{prefix} SH/90"] = stats["SH/90"].values[0]
+                        row[f"{prefix} SHA/90"] = stats["SHA/90"].values[0]
                         row[f"{prefix} Possession"] = stats["Possession"].values[0]
                         row[f"{prefix} GF"] = stats["GF"].values[0]
                         row[f"{prefix} GA"] = stats["GA"].values[0]
                         row[f"{prefix} Pts"] = stats["Pts"].values[0]
                         row[f"{prefix} Pts%"] = stats["Pts%"].values[0]
-                        row[f"{prefix} xGOT%"] = stats["xGOT%"].values[0]
                     else:
-                        row[f"{prefix} xGOT/90"] = None
-                        row[f"{prefix} xGOTC/90"] = None
+                        row[f"{prefix} SH/90"] = None
+                        row[f"{prefix} SHA/90"] = None
                         row[f"{prefix} Possession"] = None
                         row[f"{prefix} GF"] = None
                         row[f"{prefix} GA"] = None
                         row[f"{prefix} Pts"] = None
                         row[f"{prefix} Pts%"] = None
-                        row[f"{prefix} xGOT%"] = None
             rows.append(row)
         df = pd.DataFrame(rows)
         # Convert kickoff to readable format
@@ -124,17 +122,17 @@ def main():
             df["Kickoff"] = pd.to_datetime(df["Kickoff"], errors="coerce").dt.strftime("%Y-%m-%d %H:%M")
         if stats_df is not None:
             display_cols = [
-                "Week", "Kickoff", "Home", "Home xGOT/90", "Home xGOTC/90", "Home Possession",
-                "Away", "Away xGOT/90", "Away xGOTC/90", "Away Possession",
+                "Week", "Kickoff", "Home", "Home SH/90", "Home SHA/90", "Home Possession",
+                "Away", "Away SH/90", "Away SHA/90", "Away Possession",
                 "Ground"
             ]
 
             def highlight_better(row):
                 styles = [''] * len(display_cols)
-                # For xGOT/90 and Possession, higher is better; for xGOTC/90, lower is better
+                # For SH and Possession, higher is better; for SHA, lower is better
                 stat_pairs = [
-                    ("Home xGOT/90", "Away xGOT/90", "high"),
-                    ("Home xGOTC/90", "Away xGOTC/90", "low"),
+                    ("Home SH/90", "Away SH/90", "high"),
+                    ("Home SHA/90", "Away SHA/90", "low"),
                     ("Home Possession", "Away Possession", "high")
                 ]
                 green_style = 'background-color: #b6fcb6; color: black;'
@@ -174,18 +172,18 @@ def main():
     # Rename possessionPercentage to Possession
     if "possessionPercentage" in merged.columns:
         merged = merged.rename(columns={"possessionPercentage": "Possession"})
-    # Calculate xGOT/90 and xGOTC/90
-    merged["xGOT/90"] = merged["expectedGoalsOnTarget"].astype(float) / merged["played"].astype(float)
-    merged["xGOTC/90"] = merged["expectedGoalsOnTargetConceded"].astype(float) / merged["played"].astype(float)
+    # Calculate SH (Shots/90) and SHA (Shots Against/90)
+    merged["SH/90"] = merged["totalShots"].astype(float) / merged["played"].astype(float)
+    merged["SHA/90"] = merged["totalShotsConceded"].astype(float) / merged["played"].astype(float)
     # Rename goalsFor, goalsAgainst, points columns
     merged = merged.rename(columns={"goalsFor": "GF", "goalsAgainst": "GA", "points": "Pts"})
     # Add Pts% and xGOT%
     merged["Pts%"] = (merged["Pts"].astype(float) / (merged["played"].astype(float) * 3) * 100).round(1)
-    merged["xGOT%"] = (merged["xGOT/90"].astype(float) / (merged["xGOT/90"].astype(float) + merged["xGOTC/90"].astype(float)) * 100).round(1)
+    merged["SH%"] = (merged["SH/90"].astype(float) / (merged["SH/90"].astype(float) + merged["SHA/90"].astype(float)) * 100).round(1)
     # Now update the schedule table to show stats
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
-    # Display only Team ID, Team Name, xGOT/90, xGOTC/90, Possession, GF, GA, Pts, Pts%, xGOT%
-    display_cols = ["team", "xGOT/90", "xGOTC/90", "Possession", "GF", "GA", "Pts", "Pts%", "xGOT%"]
+    # Display only Team Name, SH, SHA, Possession, GF, GA, Pts, Pts%, SH%
+    display_cols = ["team", "SH/90", "SHA/90", "Possession", "GF", "GA", "Pts", "Pts%", "SH%"]
     st.subheader("Rank")
     sorted_rank = merged.sort_values(by="Pts", ascending=False)
     st.dataframe(sorted_rank[display_cols], use_container_width=True, height=800)
