@@ -156,7 +156,9 @@ def main():
 
             # Sort by Kickoff
             sorted_df = df[display_cols].sort_values(by="Kickoff")
-            styled_df = sorted_df.style.apply(highlight_better, axis=1)
+            # Format all numeric columns to 1 decimal place
+            numeric_cols = [col for col in display_cols if sorted_df[col].dtype.kind in 'fc']
+            styled_df = sorted_df.style.format({col: '{:.1f}' for col in numeric_cols}).apply(highlight_better, axis=1)
             st.dataframe(styled_df, use_container_width=True, height=400)
         return df.head(limit)
 
