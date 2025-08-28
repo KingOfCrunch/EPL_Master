@@ -182,7 +182,7 @@ def main():
     # Ensure Possession column exists for display
     if "possessionPercentage" in merged.columns:
         merged = merged.rename(columns={"possessionPercentage": "Possession"})
-    rank_cols = ["team", "xG/90", "Possession", "GF", "GA", "Pts", "Pts%"]
+    rank_cols = ["team", "xG/90", "Possession", "GF", "GA", "Pts", "Pts%"]  # team_id is not included
     st.subheader("Team Rankings")
     sorted_rank = merged.sort_values(by="Pts", ascending=False)
     st.dataframe(sorted_rank[rank_cols], use_container_width=True, height=800)
