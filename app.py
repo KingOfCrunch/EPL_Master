@@ -5,7 +5,14 @@ st.markdown(
     """
     <style>
     [data-testid='stSidebar'] {
-        background: linear-gradient(135deg, #0f2027, #2c5364, #1c92d2, #f2fcfe);
+        background: linear-gradient(135deg, #141e30 0%, #0f0 40%, #00f 70%, #a020f0 100%);
+    }
+    [data-testid='stSidebar'] * {
+        color: #fff !important;
+    }
+    /* Make dropdown label and text white */
+    label, .css-1cpxqw2, .css-1v0mbdj {
+        color: #fff !important;
     }
     </style>
     """,
