@@ -185,7 +185,7 @@ def main():
     # Now update the schedule table to show stats
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
 
-    # --- Stat selection dropdown and single stat display ---
+    # --- Stat selection dropdown for schedule table ---
     stat_options = {
         "xG/90": ("expectedGoals", True),
         "Poss%": ("possessionPercentage", False),
@@ -196,17 +196,62 @@ def main():
     selected_stat = st.selectbox("Select Stat to Display", stat_keys, index=stat_keys.index("xG/90"))
     metric_key, per90 = stat_options[selected_stat]
 
-    # Prepare stat column for display
-    merged_stat = merged[["team", metric_key, "played"]].copy()
-    if per90:
-        merged_stat[selected_stat] = merged_stat[metric_key].astype(float) / merged_stat["played"].astype(float)
-    else:
-        merged_stat[selected_stat] = merged_stat[metric_key].astype(float)
-    merged_stat = merged_stat[["team", selected_stat]]
+    # Update fetch_matches to use selected stat for home/away
+    def fetch_matches_selected_stat(season: str, limit: int = 10, stats_df: pd.DataFrame = None) -> pd.DataFrame:
+        params = {
+            "competition": "8",
+            "season": season,
+            "period": "PreMatch",
+            "_limit": str(limit)
+        }
+        r = requests.get(MATCHES_URL, params=params, headers=HEADERS, timeout=30)
+        data = r.json().get("data", [])
+        rows = []
+        for m in data:
+            home = m.get("homeTeam", {})
+            away = m.get("awayTeam", {})
+            kickoff = m.get("kickoff")
+            matchWeek = m.get("matchWeek")
+            ground = m.get("ground")
+            period = m.get("period")
+            home_id = str(home.get("id"))
+            away_id = str(away.get("id"))
+            row = {
+                "Week": matchWeek,
+                "Kickoff": kickoff,
+                "Home": home.get("name"),
+                "HomeId": home_id,
+                "Away": away.get("name"),
+                "AwayId": away_id,
+                "Ground": ground,
+                "Period": period
+            }
+            # Add home/away selected stat if stats_df is provided
+            if stats_df is not None:
+                home_stats = stats_df[stats_df["team_id"] == home_id]
+                away_stats = stats_df[stats_df["team_id"] == away_id]
+                for prefix, stats in [("Home", home_stats), ("Away", away_stats)]:
+                    if not stats.empty:
+                        value = stats[metric_key].values[0]
+                        played = stats["played"].values[0]
+                        stat_val = round(float(value) / float(played), 2) if per90 and played else round(float(value), 2)
+                        row[f"{prefix} {selected_stat}"] = stat_val
+                    else:
+                        row[f"{prefix} {selected_stat}"] = None
+            rows.append(row)
+        df = pd.DataFrame(rows)
+        # Convert kickoff to readable format
+        if "Kickoff" in df.columns:
+            df["Kickoff"] = pd.to_datetime(df["Kickoff"], errors="coerce").dt.strftime("%Y-%m-%d %H:%M")
+        # Only show relevant columns
+        display_cols = ["Week", "Kickoff", "Home", f"Home {selected_stat}", "Away", f"Away {selected_stat}", "Ground"]
+        sorted_df = df[display_cols].sort_values(by="Kickoff")
+        st.subheader(f"Upcoming Matches - {selected_stat}")
+        st.dataframe(sorted_df, use_container_width=True, height=400)
+        return df.head(limit)
 
-    st.subheader(f"Rank by {selected_stat}")
-    sorted_stat = merged_stat.sort_values(by=selected_stat, ascending=False)
-    st.dataframe(sorted_stat, use_container_width=True, height=800)
+    # Show schedule table with selected stat only
+    schedule_df = fetch_matches_selected_stat(season_year, match_limit, stats_df=merged)
 
 if __name__ == "__main__":
     main()
