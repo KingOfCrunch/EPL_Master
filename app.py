@@ -122,44 +122,14 @@ def main():
         if "Kickoff" in df.columns:
             df["Kickoff"] = pd.to_datetime(df["Kickoff"], errors="coerce").dt.strftime("%Y-%m-%d %H:%M")
         if stats_df is not None:
+            # Only show selected stat columns
+            selected_stat = st.session_state.get("selected_stat", "xG/90")
             display_cols = [
-                "Week", "Kickoff", "Home", "Home SH/90", "Home SHA/90", "Home Possession",
-                "Away", "Away SH/90", "Away SHA/90", "Away Possession",
-                "Ground"
+                "Week", "Kickoff", "Home", f"Home {selected_stat}", "Away", f"Away {selected_stat}", "Ground"
             ]
-
-            def highlight_better(row):
-                styles = [''] * len(display_cols)
-                # For SH and Possession, higher is better; for SHA, lower is better
-                stat_pairs = [
-                    ("Home SH/90", "Away SH/90", "high"),
-                    ("Home SHA/90", "Away SHA/90", "low"),
-                    ("Home Possession", "Away Possession", "high")
-                ]
-                green_style = 'background-color: #b6fcb6; color: black;'
-                for home_col, away_col, mode in stat_pairs:
-                    home_val = row[home_col]
-                    away_val = row[away_col]
-                    home_idx = display_cols.index(home_col)
-                    away_idx = display_cols.index(away_col)
-                    if pd.notnull(home_val) and pd.notnull(away_val):
-                        if mode == "high":
-                            if home_val > away_val:
-                                styles[home_idx] = green_style
-                            elif away_val > home_val:
-                                styles[away_idx] = green_style
-                        elif mode == "low":
-                            if home_val < away_val:
-                                styles[home_idx] = green_style
-                            elif away_val < home_val:
-                                styles[away_idx] = green_style
-                return styles
-
-            # Sort by Kickoff
             sorted_df = df[display_cols].sort_values(by="Kickoff")
-            # Format all numeric columns to 1 decimal place
             numeric_cols = [col for col in display_cols if sorted_df[col].dtype.kind in 'fc']
-            styled_df = sorted_df.style.format({col: '{:.1f}' for col in numeric_cols}).apply(highlight_better, axis=1)
+            styled_df = sorted_df.style.format({col: '{:.2f}' for col in numeric_cols})
             st.dataframe(styled_df, use_container_width=True, height=400)
         return df.head(limit)
 
