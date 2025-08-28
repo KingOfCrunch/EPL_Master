@@ -148,6 +148,7 @@ def main():
 
     # Show schedule table with selected stat only
     st.set_page_config(page_title="EPL Crunch", layout="wide")
+    st.markdown("# King of Crunch")
     st.subheader("Upcoming Matches")
     stats_df = fetch_stats(season_year)
     standings_df = fetch_standings(season_year)
@@ -156,14 +157,10 @@ def main():
         return
     merged = pd.merge(stats_df, standings_df, on="team_id", how="left")
     # Do not rename possessionPercentage to Possession, keep API key for mapping
-    # Calculate SH (Shots/90) and SHA (Shots Against/90)
-    merged["SH/90"] = merged["totalShots"].astype(float) / merged["played"].astype(float)
-    merged["SHA/90"] = merged["totalShotsConceded"].astype(float) / merged["played"].astype(float)
     # Rename goalsFor, goalsAgainst, points columns
     merged = merged.rename(columns={"goalsFor": "GF", "goalsAgainst": "GA", "points": "Pts"})
-    # Add Pts% and xGOT%
+    # Add Pts%
     merged["Pts%"] = (merged["Pts"].astype(float) / (merged["played"].astype(float) * 3) * 100).round(1)
-    merged["SH%"] = (merged["SH/90"].astype(float) / (merged["SH/90"].astype(float) + merged["SHA/90"].astype(float)) * 100).round(1)
 
     # Stat selection dropdown
     stat_options = {
