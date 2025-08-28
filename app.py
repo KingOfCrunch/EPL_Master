@@ -1,6 +1,16 @@
 import streamlit as st
 import pandas as pd
 import requests
+st.markdown(
+    """
+    <style>
+    [data-testid='stSidebar'] {
+        background: linear-gradient(135deg, #0f2027, #2c5364, #1c92d2, #f2fcfe);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 from datetime import datetime
 
 # Constants
