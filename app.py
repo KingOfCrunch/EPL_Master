@@ -98,7 +98,7 @@ def main():
             if stats_df is not None:
                 stat_options = {
                     "xG/90": ("expectedGoals", True),
-                    "Poss%": ("possessionPercentage", False),
+                        "Poss%": ("possessionPercentage", False),
                     "Pass% Opp Half": ("passingPercentOppHalf", False),
                     "Touch Opp Box/90": ("touchesInOppBox", True)
                 }
