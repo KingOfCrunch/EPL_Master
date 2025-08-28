@@ -182,7 +182,7 @@ def main():
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
 
     # --- Bottom rankings table (exclude SH%, SH/90, SHA/90; add xG/90) ---
-    merged["xG/90"] = merged["expectedGoals"].astype(float) / merged["played"].astype(float)
+    merged["xG/90"] = (merged["expectedGoals"].astype(float) / merged["played"].astype(float)).round(2)
     # Ensure Possession column exists for display
     if "possessionPercentage" in merged.columns:
         merged = merged.rename(columns={"possessionPercentage": "Possession"})
