@@ -148,6 +148,7 @@ def main():
 
     # Show schedule table with selected stat only
     st.set_page_config(page_title="EPL Crunch", layout="wide")
+    st.markdown("# ⚽ Premier League Fixture Analysis")
     st.subheader("Upcoming Matches")
     stats_df = fetch_stats(season_year)
     standings_df = fetch_standings(season_year)
