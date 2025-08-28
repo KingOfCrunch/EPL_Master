@@ -184,11 +184,29 @@ def main():
     merged["SH%"] = (merged["SH/90"].astype(float) / (merged["SH/90"].astype(float) + merged["SHA/90"].astype(float)) * 100).round(1)
     # Now update the schedule table to show stats
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
-    # Display only Team Name, SH, SHA, Possession, GF, GA, Pts, Pts%, SH%
-    display_cols = ["team", "SH/90", "SHA/90", "Possession", "GF", "GA", "Pts", "Pts%", "SH%"]
-    st.subheader("Rank")
-    sorted_rank = merged.sort_values(by="Pts", ascending=False)
-    st.dataframe(sorted_rank[display_cols], use_container_width=True, height=800)
+
+    # --- Stat selection dropdown and single stat display ---
+    stat_options = {
+        "xG/90": ("expectedGoals", True),
+        "Poss%": ("possessionPercentage", False),
+        "Pass% Opp Half": ("passingPercentOppHalf", False),
+        "Touch Opp Box/90": ("touchesInOppBox", True)
+    }
+    stat_keys = list(stat_options.keys())
+    selected_stat = st.selectbox("Select Stat to Display", stat_keys, index=stat_keys.index("xG/90"))
+    metric_key, per90 = stat_options[selected_stat]
+
+    # Prepare stat column for display
+    merged_stat = merged[["team", metric_key, "played"]].copy()
+    if per90:
+        merged_stat[selected_stat] = merged_stat[metric_key].astype(float) / merged_stat["played"].astype(float)
+    else:
+        merged_stat[selected_stat] = merged_stat[metric_key].astype(float)
+    merged_stat = merged_stat[["team", selected_stat]]
+
+    st.subheader(f"Rank by {selected_stat}")
+    sorted_stat = merged_stat.sort_values(by=selected_stat, ascending=False)
+    st.dataframe(sorted_stat, use_container_width=True, height=800)
 
 if __name__ == "__main__":
     main()
