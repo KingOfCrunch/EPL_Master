@@ -182,9 +182,11 @@ def main():
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
 
     # --- Bottom rankings table (exclude SH%, SH/90, SHA/90; add xG/90) ---
-    rank_cols = ["team", "xG/90", "Possession", "GF", "GA", "Pts", "Pts%"]
-    # Calculate xG/90 for rankings table
     merged["xG/90"] = merged["expectedGoals"].astype(float) / merged["played"].astype(float)
+    # Ensure Possession column exists for display
+    if "possessionPercentage" in merged.columns:
+        merged = merged.rename(columns={"possessionPercentage": "Possession"})
+    rank_cols = ["team", "xG/90", "Possession", "GF", "GA", "Pts", "Pts%"]
     st.subheader("Team Rankings")
     sorted_rank = merged.sort_values(by="Pts", ascending=False)
     st.dataframe(sorted_rank[rank_cols], use_container_width=True, height=800)
