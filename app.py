@@ -163,7 +163,7 @@ def main():
         return df.head(limit)
 
     # Show schedule table with stats only
-    st.set_page_config(page_title="PL Stats Merge", layout="wide")
+    st.set_page_config(page_title="EPL Crunch", layout="wide")
     st.subheader("Upcoming Matches")
     stats_df = fetch_stats(season_year)
     standings_df = fetch_standings(season_year)
