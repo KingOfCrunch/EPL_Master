@@ -128,8 +128,21 @@ def main():
                 "Week", "Kickoff", "Home", f"Home {selected_stat}", "Away", f"Away {selected_stat}", "Ground"
             ]
             sorted_df = df[display_cols].sort_values(by="Kickoff")
-            numeric_cols = [col for col in display_cols if sorted_df[col].dtype.kind in 'fc']
-            styled_df = sorted_df.style.format({col: '{:.2f}' for col in numeric_cols})
+            numeric_cols = [f"Home {selected_stat}", f"Away {selected_stat}"]
+            def highlight_higher(row):
+                styles = [''] * len(display_cols)
+                home_val = row[f"Home {selected_stat}"]
+                away_val = row[f"Away {selected_stat}"]
+                home_idx = display_cols.index(f"Home {selected_stat}")
+                away_idx = display_cols.index(f"Away {selected_stat}")
+                green_style = 'background-color: #b6fcb6; color: black;'
+                if pd.notnull(home_val) and pd.notnull(away_val):
+                    if home_val > away_val:
+                        styles[home_idx] = green_style
+                    elif away_val > home_val:
+                        styles[away_idx] = green_style
+                return styles
+            styled_df = sorted_df.style.format({col: '{:.2f}' for col in numeric_cols}).apply(highlight_higher, axis=1)
             st.dataframe(styled_df, use_container_width=True, height=400)
         return df.head(limit)
 
@@ -142,9 +155,7 @@ def main():
         st.error("Failed to fetch stats or standings.")
         return
     merged = pd.merge(stats_df, standings_df, on="team_id", how="left")
-    # Rename possessionPercentage to Possession
-    if "possessionPercentage" in merged.columns:
-        merged = merged.rename(columns={"possessionPercentage": "Possession"})
+    # Do not rename possessionPercentage to Possession, keep API key for mapping
     # Calculate SH (Shots/90) and SHA (Shots Against/90)
     merged["SH/90"] = merged["totalShots"].astype(float) / merged["played"].astype(float)
     merged["SHA/90"] = merged["totalShotsConceded"].astype(float) / merged["played"].astype(float)
