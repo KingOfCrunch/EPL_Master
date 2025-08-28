@@ -148,6 +148,7 @@ def main():
 
     # Show schedule table with selected stat only
     st.set_page_config(page_title="EPL Crunch", layout="wide")
+    st.markdown("# King of Crunch")
     st.subheader("Upcoming Matches")
     stats_df = fetch_stats(season_year)
     standings_df = fetch_standings(season_year)
@@ -176,8 +177,17 @@ def main():
     selected_stat = st.selectbox("Select Stat to Display", stat_keys, index=stat_keys.index("xG/90"))
     st.session_state["selected_stat"] = selected_stat
 
+
     # Show schedule table with selected stat only
     schedule_df = fetch_matches(season_year, match_limit, stats_df=merged)
+
+    # --- Bottom rankings table (exclude SH%, SH/90, SHA/90; add xG/90) ---
+    rank_cols = ["team", "xG/90", "Possession", "GF", "GA", "Pts", "Pts%"]
+    # Calculate xG/90 for rankings table
+    merged["xG/90"] = merged["expectedGoals"].astype(float) / merged["played"].astype(float)
+    st.subheader("Team Rankings")
+    sorted_rank = merged.sort_values(by="Pts", ascending=False)
+    st.dataframe(sorted_rank[rank_cols], use_container_width=True, height=800)
 
 if __name__ == "__main__":
     main()
