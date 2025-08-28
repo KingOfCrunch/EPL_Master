@@ -1,23 +1,6 @@
 import streamlit as st
 import pandas as pd
 import requests
-st.markdown(
-    """
-    <style>
-    [data-testid='stSidebar'] {
-        background: linear-gradient(135deg, #141e30 0%, #2c5364 100%);
-    }
-    [data-testid='stSidebar'] * {
-        color: #fff !important;
-    }
-    /* Make dropdown label and text white */
-    label, .css-1cpxqw2, .css-1v0mbdj {
-        color: #fff !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 from datetime import datetime
 
 # Constants
