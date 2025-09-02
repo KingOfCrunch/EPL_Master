@@ -459,7 +459,7 @@ def main():
             st.markdown(f"""
             <div style='display:flex; align-items:center; justify-content:center; margin-bottom:8px;'>
                 <div style='flex:1; text-align:right; font-weight:bold; font-size:1.2em;'>{home}</div>
-                <div style='flex:0.3; text-align:center; font-size:1.1em; background:#f3f3f3; border-radius:8px; padding:4px 12px; margin:0 4px; min-width:70px; max-width:90px;'><b>{home_score} - {away_score}</b></div>
+                <div style='flex:0.3; text-align:center; font-size:1.1em; background:#f3f3f3; border-radius:8px; padding:4px 12px; margin:0 4px; min-width:70px; max-width:90px; color:#000 !important;'><b>{home_score} - {away_score}</b></div>
                 <div style='flex:1; text-align:left; font-weight:bold; font-size:1.2em;'>{away}</div>
             </div>
             """, unsafe_allow_html=True)
