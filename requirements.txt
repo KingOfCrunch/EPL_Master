@@ -2,6 +2,6 @@ streamlit
 pandas
 requests
 understat
-difflib
 aiohttp
 plotly
+numpy
