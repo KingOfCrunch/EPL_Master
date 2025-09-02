@@ -340,7 +340,7 @@ def main():
             f"<b>{home_logo_html}{home}</b>"
             f"</div>"
             f"<div style='flex:0.5;text-align:center;font-size:1.3em;padding:0 16px;'>"
-            f"<span style='background:#f3f3f3;border-radius:8px;padding:4px 12px;'><b>{home_score} - {away_score}</b></span>"
+            f"<span style='background:#f3f3f3;border-radius:8px;padding:4px 12px;color:#000 !important;'><b>{home_score} - {away_score}</b></span>"
             f"</div>"
             f"<div style='flex:1;text-align:left;font-weight:bold;font-size:1.2em;'>"
             f"<b>{away}{away_logo_html}</b>"
@@ -350,20 +350,20 @@ def main():
         xg_away = float(stats_match_row['UnderstatObj'].get('xG', {}).get('a', 0))
         st.markdown(f"<div style='text-align: center; font-size: 1em; margin-top: 4px; margin-bottom: 18px;'>xG: {xg_home:.2f} – {xg_away:.2f}</div>", unsafe_allow_html=True)
         # Added extra margin below xG score for spacing
-        def simulate_match(xg_home, xg_away, n_sim=1000):
+        def simulate_match(xg_home, xg_away, n_sim=2000):
             home_goals = np.random.poisson(xg_home, n_sim)
             away_goals = np.random.poisson(xg_away, n_sim)
             home_win = np.sum(home_goals > away_goals)
             draw = np.sum(home_goals == away_goals)
             away_win = np.sum(home_goals < away_goals)
             return home_win, draw, away_win
-        home_win, draw, away_win = simulate_match(xg_home, xg_away, 1000)
+        home_win, draw, away_win = simulate_match(xg_home, xg_away, 2000)
         total = home_win + draw + away_win
         outcome_labels = [f"{home} Win", "Draw", f"{away} Win"]
         outcome_values = [home_win, draw, away_win]
         outcome_percent = [v / total * 100 for v in outcome_values]
         # Removed custom Outcome Key label
-        st.markdown("<div style='text-align:center; font-size:1.2em; font-weight:bold; margin-bottom:4px;'>Simulated Outcomes (1000 runs)</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; font-size:1.2em; font-weight:bold; margin-bottom:4px;'>Simulated Outcomes (2000 runs)</div>", unsafe_allow_html=True)
         donut_fig = go.Figure(data=[go.Pie(labels=outcome_labels, values=outcome_percent, hole=0.5, marker=dict(colors=["#b6fcb6", "#f3f3f3", "#fcb6b6"]))])
         donut_fig.update_layout(
             title_text="",
@@ -408,7 +408,7 @@ def main():
                     penalty_away_xg = sum(shot['xG'] for shot in all_shots if shot['situation'] == 'Penalty' and shot['side'] == 'a')
                     xg_home_nopen = max(xg_home - penalty_home_xg, 0)
                     xg_away_nopen = max(xg_away - penalty_away_xg, 0)
-                    home_win2, draw2, away_win2 = simulate_match(xg_home_nopen, xg_away_nopen, 1000)
+                    home_win2, draw2, away_win2 = simulate_match(xg_home_nopen, xg_away_nopen, 2000)
                     total2 = home_win2 + draw2 + away_win2
                     donut2_labels = outcome_labels
                     donut2_values = [home_win2, draw2, away_win2]
